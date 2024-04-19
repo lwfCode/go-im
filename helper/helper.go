@@ -78,7 +78,7 @@ func SendCode(toUserEmail, code string) error {
 	e := email.NewEmail()
 	e.From = "go-im <13262713396@163.com>"
 	e.To = []string{toUserEmail}
-	e.Subject = "【Go-IM】您好，验证码已发送，请查收"
+	e.Subject = "【Go-IM】您好，验证码已发送，30分钟内有效。"
 	e.HTML = []byte("您的验证码：<b>" + code + "</b>")
 
 	MailPwd, err := define.GetMailPwd()

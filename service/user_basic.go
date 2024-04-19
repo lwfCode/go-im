@@ -7,6 +7,7 @@ import (
 	"im/models"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +19,7 @@ type User struct {
 	Sex      int64  `json:"sex"`
 	Email    string `json:"email"`
 	Avatar   string `json:"avatar"`
+	Code     string `jsn:"code"`
 }
 
 // 用户登陆
@@ -121,6 +123,9 @@ func SendCode(c *gin.Context) {
 		common.Response(c, 200, "发送失败", nil)
 		return
 	}
+
+	//发送成功存入redis中，有效期为30分钟
+	models.CacheSet("emaiCode", code, time.Second*1800)
 
 	common.Response(c, 200, "success", nil)
 }
