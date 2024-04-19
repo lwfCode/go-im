@@ -76,3 +76,12 @@ func InsertUserInfo(
 	)
 	return res, err
 }
+
+func GetUserBasicByEmail(email string) (int64, error) {
+
+	filter := bson.D{
+		{"email", email},
+	}
+	return Mongo.Collection(UserBasic{}.CollectionName()).
+		CountDocuments(context.Background(), filter)
+}

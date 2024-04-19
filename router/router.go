@@ -21,6 +21,9 @@ func Router() *gin.Engine {
 	/** 注册接口 */
 	r.POST("/register", service.Register)
 
+	/** 发送验证码 */
+	r.POST("/send", service.SendCode)
+
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code": http.StatusNotFound,

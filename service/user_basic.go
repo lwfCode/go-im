@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"im/common"
 	"im/helper"
 	"im/models"
@@ -91,4 +92,35 @@ func GetUserDetails(c *gin.Context) {
 		return
 	}
 	common.Response(c, http.StatusOK, "获取用户详情信息成功", userInfo)
+}
+
+func SendCode(c *gin.Context) {
+	json := make(map[string]interface{}) //注意该结构接受的内容
+	c.BindJSON(&json)
+
+	email, ok := json["email"]
+	if !ok {
+		common.Response(c, 200, "请传入email", nil)
+		return
+	}
+	//判断邮箱是否被注册
+	id, err := models.GetUserBasicByEmail(email.(string))
+	if err != nil {
+		common.Response(c, 200, "系统出错!", nil)
+		return
+	}
+	if id > 0 {
+		msg := fmt.Sprintf(email.(string) + "已被注册!")
+		common.Response(c, 200, msg, nil)
+		return
+	}
+	code := helper.GetRandCode()
+	err = helper.SendCode(email.(string), code)
+	if err != nil {
+		log.Printf("[Send Code 发送失败]:%v\n", err)
+		common.Response(c, 200, "发送失败", nil)
+		return
+	}
+
+	common.Response(c, 200, "success", nil)
 }
