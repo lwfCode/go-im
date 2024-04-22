@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
@@ -47,4 +48,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 func TestWebsocketServer(t *testing.T) {
 	http.HandleFunc("/echo", echo)
 	log.Fatal(http.ListenAndServe(*addr, nil))
+}
+
+func TestGinWebsocketServer(t *testing.T) {
+	r := gin.Default()
+	r.GET("/echo", func(ctx *gin.Context) {
+		echo(ctx.Writer, ctx.Request)
+	})
+	r.Run(":8080")
 }
