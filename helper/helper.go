@@ -8,19 +8,17 @@ import (
 	"log"
 	"math/rand"
 	"net/smtp"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/jordan-wright/email"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserClaims struct {
-	// Identity string `json:"identity"`
-	Identity primitive.ObjectID `json:"identity"`
-	Email    string             `json:"email"`
+	Identity string `json:"identity"`
+	// Identity primitive.ObjectID `json:"identity"`
+	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -35,17 +33,17 @@ var myKey = []byte("im")
 // GenerateToken
 // 生成 token
 func GenerateToken(identity, email string) (string, error) {
-	objId, err := primitive.ObjectIDFromHex(identity)
-	if err != nil {
-		return "", err
-	}
+	// objId, err := primitive.ObjectIDFromHex(identity)
+	// if err != nil {
+	// 	return "", err
+	// }
 	UserClaim := &UserClaims{
-		Identity: objId,
+		Identity: identity,
 		Email:    email,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * 30)), //设置过期时间 在当前基础上 添加一个小时后 过期
-			IssuedAt:  jwt.NewNumericDate(time.Now()),                       //颁发时间
-			Subject:   "Token",                                              //主题
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * 1800)), //设置过期时间
+			IssuedAt:  jwt.NewNumericDate(time.Now()),                         //颁发时间
+			Subject:   "Token",                                                //主题
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, UserClaim)
@@ -89,17 +87,6 @@ func SendCode(toUserEmail, code string) error {
 	return e.SendWithTLS("smtp.163.com:465",
 		smtp.PlainAuth("", "13262713396@163.com", MailPwd, "smtp.163.com"),
 		&tls.Config{InsecureSkipVerify: true, ServerName: "smtp.163.com"})
-}
-
-// GetCode
-// 生成验证码
-func GetCode() string {
-	rand.Seed(time.Now().UnixNano())
-	res := ""
-	for i := 0; i < 6; i++ {
-		res += strconv.Itoa(rand.Intn(10))
-	}
-	return res
 }
 
 // GetUUID

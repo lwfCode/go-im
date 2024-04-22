@@ -16,13 +16,13 @@ func Router() *gin.Engine {
 	r.Use(cors.Default())
 
 	/** 登陆接口 */
-	r.POST("/login", service.Login)
+	r.POST("/api/login", service.Login)
 
 	/** 注册接口 */
-	r.POST("/register", service.Register)
+	r.POST("/api/register", service.Register)
 
 	/** 发送验证码 */
-	r.POST("/send", service.SendCode)
+	r.POST("/api/send", service.SendCode)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -31,9 +31,10 @@ func Router() *gin.Engine {
 		})
 	})
 
-	userGroup := r.Group("/v1/api", middlewares.AuthCheck())
+	auth := r.Group("/api", middlewares.AuthCheck())
 	{
-		userGroup.GET("/user/details", service.GetUserDetails)
+		auth.GET("/user/details", service.GetUserDetails)
+		auth.GET("/websocket/message", service.WebsocketMessage)
 	}
 
 	return r

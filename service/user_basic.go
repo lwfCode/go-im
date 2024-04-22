@@ -17,10 +17,12 @@ type User struct {
 	Password string `json:"password" binding:"required"`
 	Nickname string `json:"nickname"`
 	Sex      int64  `json:"sex"`
-	Email    string `json:"email"`
+	Email    string `json:"email" binding:"required"`
 	Avatar   string `json:"avatar"`
 	Code     string `jsn:"code"`
 }
+
+const CACHE_PREFIX = "emaiCode"
 
 // 用户登陆
 func Login(c *gin.Context) {
@@ -54,7 +56,7 @@ func Register(c *gin.Context) {
 	var params User
 
 	if err := c.BindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": "304", "error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": err.Error()})
 		return
 	}
 
@@ -97,7 +99,7 @@ func GetUserDetails(c *gin.Context) {
 }
 
 func SendCode(c *gin.Context) {
-	json := make(map[string]interface{}) //注意该结构接受的内容
+	json := make(map[string]interface{})
 	c.BindJSON(&json)
 
 	email, ok := json["email"]
@@ -125,7 +127,7 @@ func SendCode(c *gin.Context) {
 	}
 
 	//发送成功存入redis中，有效期为30分钟
-	models.CacheSet("emaiCode", code, time.Second*1800)
+	models.CacheSet(CACHE_PREFIX+email.(string), code, time.Second*1800)
 
 	common.Response(c, 200, "success", nil)
 }

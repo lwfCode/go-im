@@ -6,12 +6,11 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserBasic struct {
-	Identity  string `bson:"_id"`
+	Identity  string `bson:"identity"`
 	Account   string `bson:"account"`
 	Password  string `bson:"password"`
 	Nickname  string `bson:"nickname"`
@@ -48,11 +47,11 @@ func GetUserBasicByAccount(account string) (int64, error) {
 		CountDocuments(context.Background(), filter)
 }
 
-func GetUserBasicById(id primitive.ObjectID) (*UserBasic, error) {
+func GetUserBasicById(id string) (*UserBasic, error) {
 	ub := new(UserBasic)
 
 	filter := bson.D{
-		{"_id", id},
+		{"identity", id},
 	}
 	err := Mongo.Collection(UserBasic{}.CollectionName()).
 		FindOne(context.Background(), filter).Decode(ub)
@@ -66,6 +65,7 @@ func InsertUserInfo(
 
 	formattedTime := time.Now().Format("2006-01-02 15:04:05")
 	data := bson.D{
+		{"identity", helper.GetUUID()},
 		{"account", account}, {"password", helper.GetMd5(pasword)},
 		{"nickname", nickname}, {"email", email},
 		{"avatar", avatar}, {"sex", sex}, {"created_at", formattedTime}, {"update_at", formattedTime},
