@@ -25,6 +25,11 @@ go get github.com/gin-contrib/cors
 docker run -d --name="im-mongo" -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=admin -p 27017:27017 mongo
 ```
 
+## 接口文档
+```
+https://apifox.com/apidoc/shared-e743f54c-5ac7-4379-8a43-0c12e5477021
+```
+
 ## Demo
 
 ![alt text](/static/image.png)
