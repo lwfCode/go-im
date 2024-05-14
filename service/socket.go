@@ -67,7 +67,6 @@ func (manager *ClientManager) start(userId int, c *gin.Context) {
 		return true
 	}}).Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println(err, "+++++ERR")
 		http.NotFound(c.Writer, c.Request)
 		return
 	}
@@ -102,7 +101,6 @@ func (c *Client) read() {
 			log.Println("ReadMessage recv[ERROR]:", err)
 			return
 		}
-		fmt.Printf("read 读取客户端消息内容===>%v\n", string(message))
 
 		//处理客户端发送的数据
 		dispatch(c, message)
@@ -119,12 +117,12 @@ func (client *Client) write() {
 
 	for {
 		select {
-		case message := <-client.SendData:
-			// if !ok {
-			// 	//发送数据失败，关闭连接
-			// 	fmt.Println("发送数据失败，关闭连接====")
-			// 	return
-			// }
+		case message, ok := <-client.SendData:
+			if !ok {
+				//发送数据失败，关闭连接
+				fmt.Println("发送数据失败，关闭连接====")
+				return
+			}
 			err := client.Socket.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
 				fmt.Println("往客户端发送数据失败=====>", err)
@@ -141,13 +139,12 @@ func (client *Client) write() {
 func dispatch(client *Client, message []byte) {
 
 	request := &define.SendMsg{}
-	// request.Date = time.Now().Format("2006-01-02 15:04:05")
 	request.Date = time.Now().Format("2006年01月02日 15:04:05")
 
 	err := json.Unmarshal(message, request)
 	if err != nil {
 		fmt.Println("处理数据 json Unmarshal", err)
-		// client.SendMsg([]byte("数据不合法"))
+		client.sendErr([]byte("数据不合法"))
 		return
 	}
 	requestData, err := json.Marshal(request)
@@ -162,7 +159,6 @@ func dispatch(client *Client, message []byte) {
 	case "ping":
 		fmt.Println("心跳=====>", cmd)
 	case "chat": //单聊
-		// fmt.Println("requestData ===> ", string(requestData))
 		client.SendMsg(requestData, request.TargetId)
 	default:
 		client.sendErr([]byte("数据不合法"))
@@ -181,7 +177,7 @@ func (client *Client) SendMsg(message []byte, TargetId int) {
 	}()
 	err, cli := clientManager.GetUserKeyClient(TargetId)
 	if err != nil {
-		fmt.Println(err, "+++++++++GetUserKeyClient")
+		fmt.Println(err)
 		return
 	} else if cli != nil {
 		cli.SendData <- message
@@ -203,12 +199,11 @@ func (client *Client) SendMsg(message []byte, TargetId int) {
 		fmt.Println(err, "+++++redis.ZRevRange ERROR")
 		return
 	}
-	fmt.Println(resultSplice, "++++resultSplice")
 	score := float64(cap(resultSplice)) + 1
 
 	_, err = utils.Redis.ZAdd(ctx, key, &redis.Z{score, message}).Result()
 	if err != nil {
-		fmt.Println(err, "++++ZADD ERROR")
+		fmt.Println(err)
 		return
 	}
 }

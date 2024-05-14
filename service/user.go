@@ -112,6 +112,7 @@ func GetUserInfo(c *gin.Context) {
 	}
 	common.Response(c, http.StatusOK, "获取用户详情信息成功", userInfo)
 }
+
 func GetUserDetails(c *gin.Context) {
 	user, err := CheckAuth(c)
 	if err != nil {
@@ -356,14 +357,12 @@ func MessageList(c *gin.Context) {
 		Date        string      `json:"date"`
 		TargetId    int         `json:"target_id"`
 	}
-	// msgList := make(map[int]messageInfo, len(list))
 	msgList := make([]messageInfo, 0)
 
 	for _, value := range list {
 		message := new(define.SendMsg)
 		err := json.Unmarshal([]byte(value), &message)
 		if err != nil {
-			fmt.Println("json 解析失败===>", err)
 			break
 		}
 		var info = messageInfo{}
@@ -392,7 +391,6 @@ func MessageList(c *gin.Context) {
 		}
 		msgList = append(msgList, info)
 	}
-	fmt.Println(msgList, "+++Msg")
 	common.Response(c, 200, "success", msgList)
 	return
 }
